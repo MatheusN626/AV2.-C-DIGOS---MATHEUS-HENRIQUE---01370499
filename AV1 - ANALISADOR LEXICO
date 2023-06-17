@@ -1,0 +1,100 @@
+import java.util.Scanner;
+
+public class AnalisadorLexico_MatheusHenrique {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        boolean repeat = true;
+
+        while(repeat){
+            System.out.println("Digite uma cadeia de caracteres: ");
+            String cadeia = sc.nextLine();
+
+            //Parte 1: analisar os tokens da cadeia
+            boolean isInvalid = false;
+            for(int i = 0; i < cadeia.length(); i++){
+                char c = cadeia.charAt(i);
+                if(!Character.isLetterOrDigit(c) && c != ' '){
+                    isInvalid = true;
+                    break;
+                }
+                if(Character.isLetter(c)){
+                    c = Character.toUpperCase(c);
+                    if(c == 'J' || c == 'W' || c == 'K' || c == 'Y' || c == 'G' || c == 'H' || c == 'Q'){
+                        isInvalid = true;
+                        break;
+                    }
+                }
+            }
+            if(isInvalid){
+                System.out.println("Cadeia inválida!");
+                continue;
+            }
+
+            //Parte 2: analisar a sequência léxica da cadeia
+            String[] tokens = cadeia.split(" ");
+            int cont = 0;
+            boolean isReserved = false;
+            for(String token : tokens){
+                if(token.length() > 10){
+                    isInvalid = true;
+                    break;
+                }
+                if(token.length() == 0){
+                    continue;
+                }
+                char[] charArray = token.toCharArray();
+                boolean isConsoante = false;
+                for(int i = 0; i < charArray.length; i++){
+                    char c = charArray[i];
+                    if(Character.isLetter(c)){
+                        c = Character.toUpperCase(c);
+                        if(c == 'Z' || c == 'X'){
+                            isReserved = true;
+                            break;
+                        }
+                        if(!isConsoante && isVogal(c)){
+                            isInvalid = true;
+                            break;
+                        }
+                        if(isConsoante && !isVogal(c)){
+                            isInvalid = true;
+                            break;
+                        }
+                        isConsoante = !isConsoante;
+                    } else if(Character.isDigit(c)){
+                        if(i < charArray.length-1){
+                            isInvalid = true;
+                            break;
+                        }
+                    } else {
+                        isInvalid = true;
+                        break;
+                    }
+                }
+                cont++;
+                if(isReserved){
+                    break;
+                }
+            }
+            if(isInvalid){
+                System.out.println("Cadeia inválida!");
+                continue;
+            }
+            if(isReserved){
+                System.out.println("Cadeia contém palavra reservada pelo sistema!");
+            } else {
+                System.out.println("Cadeia válida!");
+            }
+
+            System.out.println("Deseja continuar? (S/N)");
+            String resposta = sc.nextLine();
+            if(!resposta.equalsIgnoreCase("S")){
+                repeat = false;
+            }
+        }
+    }
+
+    public static boolean isVogal(char c){
+        return c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
+    }
+}
