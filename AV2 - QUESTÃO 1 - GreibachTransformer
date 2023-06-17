@@ -1,0 +1,68 @@
+// 1A QUESTÃO DA AV2
+
+import java.util.*;
+
+public class GreibachTransformer {
+
+    public static void main(String[] args) {
+        Map<Character, List<String>> productionRules = new HashMap<>();
+        productionRules.put('S', Arrays.asList("AB", "CSB"));
+        productionRules.put('A', Arrays.asList("aB", "C"));
+        productionRules.put('B', Arrays.asList("bbB", "b"));
+
+        Map<Character, List<String>> transformedRules = transformToGreibach(productionRules);
+
+        for (char variable : transformedRules.keySet()) {
+            List<String> rules = transformedRules.get(variable);
+            System.out.print(variable + " -> ");
+            for (int i = 0; i < rules.size(); i++) {
+                System.out.print(rules.get(i));
+                if (i < rules.size() - 1) {
+                    System.out.print(" | ");
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    private static Map<Character, List<String>> transformToGreibach(Map<Character, List<String>> productionRules) {
+        Map<Character, List<String>> transformedRules = new HashMap<>();
+
+        for (char variable : productionRules.keySet()) {
+            List<String> rules = productionRules.get(variable);
+            List<String> transformed = new ArrayList<>();
+
+            for (String rule : rules) {
+                StringBuilder transformedRule = new StringBuilder();
+                transformedRule.append(rule.charAt(0));
+
+                for (int i = 1; i < rule.length(); i++) {
+                    char symbol = rule.charAt(i);
+
+                    if (Character.isLowerCase(symbol)) {
+                        transformedRule.append(symbol);
+                    } else {
+                        transformedRule.append(getNewVariable(symbol, transformedRules));
+                    }
+                }
+
+                transformed.add(transformedRule.toString());
+            }
+
+            transformedRules.put(variable, transformed);
+        }
+
+        return transformedRules;
+    }
+
+    private static char getNewVariable(char symbol, Map<Character, List<String>> transformedRules) {
+        char newVariable = 'Z';
+
+        while (transformedRules.containsKey(newVariable)) {
+            newVariable--;
+        }
+
+        transformedRules.put(newVariable, Collections.singletonList(Character.toString(symbol)));
+        return newVariable;
+    }
+}
