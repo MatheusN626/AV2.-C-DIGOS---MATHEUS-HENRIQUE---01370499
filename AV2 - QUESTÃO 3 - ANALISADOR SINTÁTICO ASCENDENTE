@@ -1,0 +1,118 @@
+import java.util.List;
+
+// Classe para representar um token
+class Token {
+    private String tipo;
+    private Object valor;
+
+    public Token(String tipo, Object valor) {
+        this.tipo = tipo;
+        this.valor = valor;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public Object getValor() {
+        return valor;
+    }
+}
+
+// Classe para representar o analisador sintático
+class AnalisadorSintatico {
+    private List<Token> tokens;
+    private int posicao;
+
+    public AnalisadorSintatico(List<Token> tokens) {
+        this.tokens = tokens;
+        this.posicao = 0;
+    }
+
+    public Object analisar() {
+        // Chama a regra inicial
+        return expr();
+    }
+
+    private Token proximoToken() {
+        if (posicao < tokens.size()) {
+            return tokens.get(posicao++);
+        } else {
+            return null;
+        }
+    }
+
+    private void casar(String tipo) {
+        Token tokenAtual = proximoToken();
+        if (tokenAtual != null && tokenAtual.getTipo().equals(tipo)) {
+            // Caso o token corresponda ao esperado, avança para o próximo
+        } else {
+            throw new RuntimeException("Erro de sintaxe: esperado " + tipo +
+                ", encontrado " + (tokenAtual != null ? tokenAtual.getTipo() : "fim da entrada"));
+        }
+    }
+
+    // Regra para expressão
+    private Object expr() {
+        Object resultado = termo();
+        while (true) {
+            Token tokenAtual = proximoToken();
+            if (tokenAtual != null && (tokenAtual.getTipo().equals("+") || tokenAtual.getTipo().equals("-"))) {
+                casar(tokenAtual.getTipo());
+                resultado = new Object[]{tokenAtual.getTipo(), resultado, termo()};
+            } else {
+                break;
+            }
+        }
+        return resultado;
+    }
+
+    // Regra para termo
+    private Object termo() {
+        Object resultado = fator();
+        while (true) {
+            Token tokenAtual = proximoToken();
+            if (tokenAtual != null && (tokenAtual.getTipo().equals("*") || tokenAtual.getTipo().equals("/"))) {
+                casar(tokenAtual.getTipo());
+                resultado = new Object[]{tokenAtual.getTipo(), resultado, fator()};
+            } else {
+                break;
+            }
+        }
+        return resultado;
+    }
+
+    // Regra para fator
+    private Object fator() {
+        Token tokenAtual = proximoToken();
+        if (tokenAtual != null && tokenAtual.getTipo().equals("NUM")) {
+            casar("NUM");
+            return tokenAtual.getValor();
+        } else if (tokenAtual != null && tokenAtual.getTipo().equals("(")) {
+            casar("(");
+            Object resultado = expr();
+            casar(")");
+            return resultado;
+        } else {
+            throw new RuntimeException("Erro de sintaxe: encontrado " + (tokenAtual != null ? tokenAtual.getTipo() : "fim da entrada"));
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Tokens de exemplo
+        List<Token> tokens = List.of(
+                new Token("NUM", 2),
+                new Token("+", null),
+                new Token("NUM", 3),
+                new Token("*", null),
+                new Token("NUM", 4)
+        );
+
+        // Cria e executa o analisador sintático
+        AnalisadorSintatico analisador = new AnalisadorSintatico(tokens);
+        Object arvoreSintatica = analisador.analisar();
+        System.out.println(arvoreSintatica);
+    }
+}
